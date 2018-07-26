@@ -1,0 +1,78 @@
+Assignment 3
+
+# Use the following data for this assignment:
+
+import pandas as pd
+import numpy as np
+
+np.random.seed(12345)
+
+df = pd.DataFrame([np.random.normal(32000,200000,3650), 
+                   np.random.normal(43000,100000,3650), 
+                   np.random.normal(43500,140000,3650), 
+                   np.random.normal(48000,70000,3650)], 
+                  index=[1992,1993,1994,1995])
+df
+
+#create a table with the summary statistics calculated
+dftrans = df.T
+dfstats1 = dftrans.describe()
+dfstats1
+dfstats_trans = dfstats1.T
+dfstats_trans['yerr'] = 1.96 * dfstats_trans['std'] / np.sqrt(dfstats_trans['count'])
+
+dfstats1 = dfstats_trans.T
+
+dfstats1
+
+
+
+%matplotlib notebook 
+import pandas as pd 
+import matplotlib.pyplot as plt 
+import numpy as np
+
+mean_series = dfstats1.loc['mean'] 
+yerr_series = dfstats1.loc['yerr'] 
+errList = list(dfstats1.loc['yerr'])
+# initialise the y value to 42000
+y = 42000
+plt.figure() 
+plt.show()
+bar_plot = plt.bar(range(df.shape[0]), mean_series, yerr = yerr_series, color='lightslategrey')
+
+
+plt.axhline(y , color = 'grey', alpha = 0.5)
+
+
+
+import matplotlib.colors as mcol
+import matplotlib.cm as cm
+
+cm1 = mcol.LinearSegmentedColormap.from_list("MyCmapName",["b", "white", "red"])
+cpick = cm.ScalarMappable(cmap=cm1)
+cpick.set_array([])
+cpick
+
+
+
+
+percentages = []
+for bar, yerr_ in zip(bar_plot, yerr_series):
+    low = bar.get_height() - yerr_
+    high = bar.get_height() + yerr_
+    percentage = (high-y)/(high-low)
+    if percentage>1: percentage = 1
+    if percentage<0: percentage=0
+    percentages.append(percentage)
+percentages
+
+
+cpick.to_rgba(percentages)
+
+
+bars = plt.bar(range(df.shape[0]), mean_series, yerr = yerr_series, color = cpick.to_rgba(percentages))
+plt.colorbar(cpick, orientation='horizontal')
+
+
+plt.xticks(range(df.shape[0]), df.index, alpha = 0.8)
